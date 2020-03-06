@@ -552,6 +552,9 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:1.15
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
     ports:
       - 16686:16686
     deploy:
@@ -561,13 +564,35 @@ services:
     networks:
       - my-network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
+    environment:
+      - discovery.type=single-node
+      - STORAGE=elasticsearch
+      - ES_NODES=http://localhost:9200
+      - ES_USERNAME=user
+      - ES_PASSWORD=password
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - my-network
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.3.0
+    environment:
+      SERVER_NAME: kibana.org 
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    ports:
+      - 5601:5601      
+    networks:
+      - my-network
+     
 networks:
     my-network:
       # driver: overlay
       driver: bridge
 
-
-
-
-
+volumes:
+  esdata:
