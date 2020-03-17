@@ -14,6 +14,9 @@ PUT _ingest/pipeline/jaeger
             if(ctx.tags[i].key == 'span.kind'){
               ctx.kind = ctx.tags[i].value.toUpperCase();
             }
+            if(ctx.tags[i].key == 'experiment'){
+              ctx.experiment = ctx.tags[i].value;
+            }
           }
           for (int i = 0; i < ctx.references.length; ++i) {
             if(ctx.references[i].refType == 'CHILD_OF'){
@@ -27,7 +30,7 @@ PUT _ingest/pipeline/jaeger
   }
   
   
-  PUT /jaeger-span-*/_settings
+PUT /jaeger-span-*/_settings
 {
     "index" : {
         "default_pipeline" : "jaeger"
