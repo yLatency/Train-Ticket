@@ -31,17 +31,6 @@ public class TravelController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelController.class);
 
-    @Autowired
-    private Tracer tracer;
-
-    protected static Random random = new Random(33);
-
-	private void addRequestClass() {
-		int requestClass = random.nextInt(10);
-		Span span = tracer.activeSpan();
-		span.setBaggageItem("experiment", Integer.toString(requestClass));
-		span.setTag("experiment", Integer.toString(requestClass));
-	}
 
     @GetMapping(path = "/welcome")
     public String home(@RequestHeader HttpHeaders headers) {
@@ -115,7 +104,6 @@ public class TravelController {
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/trips/left")
     public HttpEntity queryInfo(@RequestBody TripInfo info, @RequestHeader HttpHeaders headers) {
-        addRequestClass();
         if (info.getStartingPlace() == null || info.getStartingPlace().length() == 0 ||
                 info.getEndPlace() == null || info.getEndPlace().length() == 0 ||
                 info.getDepartureTime() == null) {
