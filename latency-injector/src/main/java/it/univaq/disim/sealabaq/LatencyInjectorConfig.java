@@ -11,6 +11,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+
+import java.io.InputStream;
+
+
 @Configuration
 @AutoConfigureAfter(ServerTracingAutoConfiguration.class)
 public class LatencyInjectorConfig extends WebMvcConfigurerAdapter{
@@ -20,10 +24,13 @@ public class LatencyInjectorConfig extends WebMvcConfigurerAdapter{
     @Autowired
     private Tracer tracer;
 
+    private InputStream stream = getClass().getClassLoader().getResourceAsStream("/config.json");
+
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         LatencyInjectorConfig.logger.info("Adding Interceptor" + LatencyInjectionInterceptor.class.getSimpleName());
-        registry.addInterceptor(new LatencyInjectionInterceptor(tracer));
+        registry.addInterceptor(new LatencyInjectionInterceptor(tracer, stream));
     }
 
 }

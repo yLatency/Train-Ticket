@@ -1,0 +1,9 @@
+http://ts-travel-service:12346/api/v1/travelservice/trips/left
+http://ts-travel-service:12346/api/v1/stationservice/stations/id
+http://ts-travel-service:12346/api/v1/basicservice/basic
+http://ts-travel-service:12346/api/v1/travelservice/train_types
+http://ts-travel-service:12346/api/v1/seatservice/seats/left_tickets
+http://ts-travel-service:12346/api/v1/trainservice/trains
+http://ts-travel-service:12346/api/v1/travelservice/routes
+http://ts-travel-service:12346/api/v1/ticketinfoservice/ticketinfo
+http://ts-travel-service:12346/api/v1/routeservice/routes
