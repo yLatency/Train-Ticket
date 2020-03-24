@@ -54,10 +54,13 @@ public class LatencyInjectionInterceptor extends HandlerInterceptorAdapter {
 
     private int getDelay(HttpServletRequest request, int experimentNumber) {
         String requestURL = request.getRequestURL().toString();
-        for ( String url : config.keySet() ){
-            String regexp = url + ".*";
-            if (requestURL.matches(regexp)){
-                return config.get(url).get(experimentNumber);
+        String requestMethod = request.getMethod();
+        for ( String key : config.keySet() ){
+            String[] methodAndUrl = key.split(",");
+            String method = methodAndUrl[0];
+            String urlRegexp = methodAndUrl[1] + ".*";
+            if (requestURL.matches(urlRegexp) && requestMethod.equals(method) ){
+                return config.get(key).get(experimentNumber);
             }
         }
         return 0;
