@@ -1,10 +1,8 @@
 GET,http://ts-travel-service:12346/api/v1/basicservice/basic
 GET,http://ts-travel-service:12346/api/v1/configservice/configs/DirectTicketAllocationProportion
-GET,http://ts-travel-service:12346/api/v1/orderservice/order
 GET,http://ts-travel-service:12346/api/v1/priceservice/prices
 GET,http://ts-travel-service:12346/api/v1/routeservice/routes
 GET,http://ts-travel-service:12346/api/v1/stationservice/stations/id
-GET,http://ts-travel-service:12346/api/v1/ticketinfoservice/ticketinfo
 GET,http://ts-travel-service:12346/api/v1/trainservice/trains
 GET,http://ts-travel-service:12346/api/v1/travelservice/routes
 GET,http://ts-travel-service:12346/api/v1/travelservice/train_types
