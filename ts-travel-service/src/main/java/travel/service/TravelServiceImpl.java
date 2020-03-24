@@ -11,11 +11,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 import travel.entity.*;
 import travel.repository.TripRepository;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author fdse
@@ -28,6 +31,9 @@ public class TravelServiceImpl implements TravelService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private AsyncRestTemplate asyncRestTemplate;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelServiceImpl.class);
 
@@ -207,26 +213,20 @@ public class TravelServiceImpl implements TravelService {
         query.setDepartureTime(departureTime);
 
         HttpEntity requestEntity = new HttpEntity(query, headers);
-        ResponseEntity<Response> re = restTemplate.exchange(
+        ListenableFuture<ResponseEntity<Response>> re = asyncRestTemplate.exchange(
                 "http://ts-ticketinfo-service:15681/api/v1/ticketinfoservice/ticketinfo",
                 HttpMethod.POST,
                 requestEntity,
                 Response.class);
-        TravelServiceImpl.LOGGER.info("Ts-basic-service ticket info is: {}", re.getBody().toString());
-        TravelResult resultForTravel = JsonUtils.conveterObject(re.getBody().getData(), TravelResult.class);
 
         //Ticket order _ high-speed train (number of tickets purchased)
         requestEntity = new HttpEntity(headers);
-        ResponseEntity<Response<SoldTicket>> re2 = restTemplate.exchange(
+        ListenableFuture<ResponseEntity<Response<SoldTicket>>> re2 = asyncRestTemplate.exchange(
                 "http://ts-order-service:12031/api/v1/orderservice/order/" + departureTime + "/" + trip.getTripId().toString(),
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<SoldTicket>>() {
                 });
-
-        Response<SoldTicket> result = re2.getBody();
-        TravelServiceImpl.LOGGER.info("Order info is: {}", result.toString());
-
 
         //Set the returned ticket information
         TripResponse response = new TripResponse();
@@ -265,6 +265,20 @@ public class TravelServiceImpl implements TravelService {
         calendarEnd.add(Calendar.MINUTE, minutesEnd);
         response.setEndTime(calendarEnd.getTime());
         TravelServiceImpl.LOGGER.info("[Train Service] calculate time：{}  time: {}", minutesEnd, calendarEnd.getTime());
+
+        Response<SoldTicket> result = null;
+        TravelResult resultForTravel = null;
+        try {
+            resultForTravel = JsonUtils.conveterObject(re.get().getBody().getData(), TravelResult.class);
+            TravelServiceImpl.LOGGER.info("Ts-basic-service ticket info is: {}", re.get().getBody().toString());
+            result = re2.get().getBody();
+            TravelServiceImpl.LOGGER.info("Order info is: {}", result.toString());
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         response.setTripId(new TripId(result.getData().getTrainNumber()));
         response.setTrainTypeId(trip.getTrainTypeId());
