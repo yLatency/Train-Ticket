@@ -1,5 +1,5 @@
 {
-   "GET,http://ts-travel-service:12346/api/v1/basicservice/basic": [
+   "GET,/api/v1/basicservice/basic": [
       0,
       0,
       0,
@@ -11,7 +11,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/configservice/configs/DirectTicketAllocationProportion": [
+   "GET,/api/v1/configservice/configs/DirectTicketAllocationProportion": [
       0,
       0,
       0,
@@ -23,7 +23,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/priceservice/prices": [
+   "GET,/api/v1/priceservice/prices": [
       0,
       0,
       0,
@@ -35,7 +35,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/routeservice/routes": [
+   "GET,/api/v1/routeservice/routes": [
       0,
       0,
       0,
@@ -47,7 +47,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/stationservice/stations/id": [
+   "GET,/api/v1/stationservice/stations/id": [
       0,
       0,
       0,
@@ -59,7 +59,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/trainservice/trains": [
+   "GET,/api/v1/ticketinfoservice/ticketinfo": [
       0,
       0,
       0,
@@ -71,7 +71,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/travelservice/routes": [
+   "GET,/api/v1/travelservice/routes": [
       0,
       0,
       0,
@@ -83,7 +83,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/travelservice/train_types": [
+   "GET,/api/v1/travelservice/train_types": [
       0,
       0,
       0,
@@ -95,7 +95,7 @@
       0,
       0
    ],
-   "POST,http://ts-travel-service:12346/api/v1/basicservice/basic/travel": [
+   "POST,/api/v1/basicservice/basic/travel": [
       0,
       0,
       0,
@@ -107,7 +107,7 @@
       0,
       0
    ],
-   "POST,http://ts-travel-service:12346/api/v1/orderservice/order/tickets": [
+   "POST,/api/v1/orderservice/order/tickets": [
       0,
       0,
       0,
@@ -119,7 +119,7 @@
       0,
       0
    ],
-   "POST,http://ts-travel-service:12346/api/v1/seatservice/seats/left_tickets": [
+   "POST,/api/v1/seatservice/seats/left_tickets": [
       0,
       0,
       0,
@@ -131,7 +131,7 @@
       0,
       0
    ],
-   "POST,http://ts-travel-service:12346/api/v1/ticketinfoservice/ticketinfo": [
+   "POST,/api/v1/ticketinfoservice/ticketinfo": [
       0,
       0,
       0,
@@ -143,7 +143,7 @@
       0,
       0
    ],
-   "POST,http://ts-travel-service:12346/api/v1/travelservice/trips/left": [
+   "GET,/api/v1/orderservice/order": [
       0,
       0,
       0,
@@ -155,19 +155,7 @@
       0,
       0
    ],
-   "GET,http://ts-travel-service:12346/api/v1/orderservice/order": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-   ],
-   "GET,http://ts-travel-service:12346/api/v1/ticketinfoservice/ticketinfo": [
+   "GET,/api/v1/trainservice/trains": [
       0,
       0,
       0,
