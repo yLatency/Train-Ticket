@@ -213,11 +213,13 @@ public class TravelServiceImpl implements TravelService {
         query.setDepartureTime(departureTime);
 
         HttpEntity requestEntity = new HttpEntity(query, headers);
-        ListenableFuture<ResponseEntity<Response>> re = asyncRestTemplate.exchange(
+        ResponseEntity<Response> re = restTemplate.exchange(
                 "http://ts-ticketinfo-service:15681/api/v1/ticketinfoservice/ticketinfo",
                 HttpMethod.POST,
                 requestEntity,
                 Response.class);
+
+        ListenableFuture<ResponseEntity<Response>> futureTrainType = getAsyncTrainType(trip.getTrainTypeId(), headers);
 
         //Ticket order _ high-speed train (number of tickets purchased)
         requestEntity = new HttpEntity(headers);
@@ -249,7 +251,15 @@ public class TravelServiceImpl implements TravelService {
         int indexEnd = route.getStations().indexOf(endPlaceId);
         int distanceStart = route.getDistances().get(indexStart) - route.getDistances().get(0);
         int distanceEnd = route.getDistances().get(indexEnd) - route.getDistances().get(0);
-        TrainType trainType = getTrainType(trip.getTrainTypeId(), headers);
+
+        TrainType trainType = null;
+        try {
+            trainType = JsonUtils.conveterObject(futureTrainType.get().getBody().getData(), TrainType.class);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         //Train running time is calculated according to the average running speed of the train
         int minutesStart = 60 * distanceStart / trainType.getAverageSpeed();
         int minutesEnd = 60 * distanceEnd / trainType.getAverageSpeed();
@@ -268,9 +278,10 @@ public class TravelServiceImpl implements TravelService {
 
         Response<SoldTicket> result = null;
         TravelResult resultForTravel = null;
+        resultForTravel = JsonUtils.conveterObject(re.getBody().getData(), TravelResult.class);
+        TravelServiceImpl.LOGGER.info("Ts-basic-service ticket info is: {}", re.getBody().toString());
+
         try {
-            resultForTravel = JsonUtils.conveterObject(re.get().getBody().getData(), TravelResult.class);
-            TravelServiceImpl.LOGGER.info("Ts-basic-service ticket info is: {}", re.get().getBody().toString());
             result = re2.get().getBody();
             TravelServiceImpl.LOGGER.info("Order info is: {}", result.toString());
 
@@ -331,6 +342,19 @@ public class TravelServiceImpl implements TravelService {
 
         return re.getBody().getData();
     }
+
+    public ListenableFuture<ResponseEntity<Response>>  getAsyncTrainType(String trainTypeId, HttpHeaders headers) {
+        TravelServiceImpl.LOGGER.info("[Basic Information Service][Query Train Type] Train Type: {}", trainTypeId);
+        HttpEntity requestEntity = new HttpEntity( headers);
+        ListenableFuture<ResponseEntity<Response>> re = asyncRestTemplate.exchange(
+                "http://ts-train-service:14567/api/v1/trainservice/trains/" + trainTypeId,
+                HttpMethod.GET,
+                requestEntity,
+                Response.class);
+
+        return re;
+    }
+
 
     private String queryForStationId(String stationName, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);

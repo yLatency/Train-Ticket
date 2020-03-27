@@ -53,13 +53,13 @@ public class LatencyInjectionInterceptor extends HandlerInterceptorAdapter {
     }
 
     private int getDelay(HttpServletRequest request, int experimentNumber) {
-        String requestURL = request.getRequestURL().toString();
+        String requestURL = request.getRequestURI();
         String requestMethod = request.getMethod();
         for ( String key : config.keySet() ){
-            String[] methodAndUrl = key.split(",");
-            String method = methodAndUrl[0];
-            String urlRegexp = methodAndUrl[1] + ".*";
-            if (requestURL.matches(urlRegexp) && requestMethod.equals(method) ){
+            String[] methodAndURI = key.split(",");
+            String method = methodAndURI[0];
+            String uriRegexp = methodAndURI[1] + ".*";
+            if (requestURL.matches(uriRegexp) && requestMethod.equals(method) ){
                 return config.get(key).get(experimentNumber);
             }
         }
@@ -77,7 +77,7 @@ public class LatencyInjectionInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        logger.info("Request URL: " + request.getRequestURL());
+        logger.info("Request URI: " + request.getRequestURI());
 
         Span span = tracer.activeSpan();
         if (span != null) {

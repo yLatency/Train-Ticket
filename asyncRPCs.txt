@@ -1,2 +1,2 @@
-GET,http://ts-travel-service:12346/api/v1/orderservice/order
-GET,http://ts-travel-service:12346/api/v1/ticketinfoservice/ticketinfo
+GET,/api/v1/orderservice/order
+GET,/api/v1/trainservice/trains
