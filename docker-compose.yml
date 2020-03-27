@@ -555,6 +555,8 @@ services:
     environment:
       - SPAN_STORAGE_TYPE=elasticsearch
       - ES_SERVER_URLS=http://elasticsearch:9200
+      - PROCESSOR_JAEGER_COMPACT_SERVER_QUEUE_SIZE=10000000
+      - COLLECTOR_QUEUE_SIZE=10000000
     ports:
       - 16686:16686
     deploy:
