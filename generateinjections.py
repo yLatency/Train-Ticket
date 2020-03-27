@@ -4,6 +4,7 @@
 import random
 import json
 import sys
+from math import ceil
 
 CONFIG_JSON = "latency-injector/src/main/resources/config.json"
 SYNC_RPCS_PATH = "syncRPCs.txt"
@@ -19,9 +20,10 @@ MAX_AFFECTED_RPCS_WCLASS = 3
 ## user waiting time: wait_time = between(1.0, 3.0) random waiting time between 1 seconds and 3 seconds
 REQ_STD = 5.59
 
+
 def random_delay(affected_rpcs):
-    delay_ = random.uniform(2*REQ_STD, 3*REQ_STD)/len(affected_rpcs)
-    return int(round(delay_))
+    delay_ = random.uniform(2*REQ_STD, 4*REQ_STD)
+    return int(ceil(delay_/len(affected_rpcs)))
 
 
 def read_rpcs(RPCS_PATH):
@@ -66,7 +68,7 @@ def add_sync_rpcs(cfg, rpcs, affected_rpcs):
     return cfg
 
 def add_async_rpcs(cfg, rpcs, affected_rpc):
-    delay = int(round(random.uniform(2*REQ_STD, 3*REQ_STD)))
+    delay = int(ceil(random.uniform(2*REQ_STD, 4*REQ_STD)))
     for rpc in rpcs:
         if rpc == affected_rpc:
             cfg[rpc] = [delay if i < NUM_NOISED_CLASSES else 0 for i in range(NUM_REQ_CLASSES)]
