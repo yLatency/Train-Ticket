@@ -12,7 +12,7 @@ ASYNC_RPCS_PATH = "asyncRPCs.txt"
 
 NUM_AFFECTED_CLASSES = int(sys.argv[1])
 NUM_REQ_CLASSES = 10
-NUM_NOISED_CLASSES = 5
+NOISED_CLASSES = range(0,NUM_REQ_CLASSES,2)
 MAX_AFFECTED_RPCS_WCLASS = 3
 
 ## Request std during a 5min load test without injection
@@ -70,10 +70,10 @@ def add_sync_rpcs(cfg, rpcs, affected_rpcs):
 def add_async_rpcs(cfg, rpcs, affected_rpc):
     delay = int(ceil(random.uniform(2*REQ_STD, 4*REQ_STD)))
     for rpc in rpcs:
+        cfg[rpc] = [0 for i in range(NUM_REQ_CLASSES)]
         if rpc == affected_rpc:
-            cfg[rpc] = [delay if i < NUM_NOISED_CLASSES else 0 for i in range(NUM_REQ_CLASSES)]
-        else:
-            cfg[rpc] = [0 for i in range(NUM_REQ_CLASSES)]
+            for req_class in NOISED_CLASSES:
+                cfg[rpc][req_class] = delay
     return cfg
 
 def write_config(config):
