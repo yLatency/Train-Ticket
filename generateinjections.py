@@ -6,13 +6,14 @@ import json
 import sys
 from math import ceil
 
-CONFIG_JSON = "latency-injector/src/main/resources/config.json"
+DELAYS_CONFIG_JSON = "latency-injector/src/main/resources/delays.json"
+NOISES_CONFIG_JSON = "latency-injector/src/main/resources/noises.json"
 SYNC_RPCS_PATH = "syncRPCs.txt"
 ASYNC_RPCS_PATH = "asyncRPCs.txt"
 
 NUM_AFFECTED_CLASSES = int(sys.argv[1])
 NUM_REQ_CLASSES = 10
-NOISED_CLASSES = range(0,NUM_REQ_CLASSES,2)
+NOISE_PROB = 0.5
 MAX_AFFECTED_RPCS_WCLASS = 3
 
 ## Request std during a 5min load test without injection
@@ -49,7 +50,8 @@ def select_affected_asyncrpc(rpcs):
 
 
 
-def add_sync_rpcs(cfg, rpcs, affected_rpcs):
+def create_delays_cfg(rpcs, affected_rpcs):
+    cfg = {}
     for rpc in rpcs:
         cfg[rpc] = []
     
@@ -67,18 +69,20 @@ def add_sync_rpcs(cfg, rpcs, affected_rpcs):
 
     return cfg
 
-def add_async_rpcs(cfg, rpcs, affected_rpc):
+
+def create_noises_cfg(affected_rpc):
+    cfg = []
     delay = int(ceil(random.uniform(2*REQ_STD, 4*REQ_STD)))
-    for rpc in rpcs:
-        cfg[rpc] = [0 for i in range(NUM_REQ_CLASSES)]
-        if rpc == affected_rpc:
-            for req_class in NOISED_CLASSES:
-                cfg[rpc][req_class] = delay
+    httpmethod, uri =  affected_rpc.split(',')
+    cfg.append({'uri': uri, 'method': httpmethod, 'prob': NOISE_PROB, 'delay': delay})
     return cfg
 
-def write_config(config):
-    with open(CONFIG_JSON, mode='w') as f:
-        json.dump(config, f, indent=3)
+def write_configs(delays_cfg, noises_cfg):
+    with open(DELAYS_CONFIG_JSON, mode='w') as f:
+        json.dump(delays_cfg, f, indent=3)
+
+    with open(NOISES_CONFIG_JSON, mode='w') as f:
+        json.dump(noises_cfg, f, indent=3)
 
 
 def main():
@@ -86,10 +90,9 @@ def main():
     asyncrpcs = read_rpcs(ASYNC_RPCS_PATH)
     affected_syncrpcs = select_affected_syncrpcs(syncrpcs)
     affected_asyncrpc = select_affected_asyncrpc(asyncrpcs)
-    config = {}
-    add_sync_rpcs(config, syncrpcs, affected_syncrpcs)
-    add_async_rpcs(config, asyncrpcs, affected_asyncrpc)
-    write_config(config)
+    delays_cfg = create_delays_cfg(syncrpcs, affected_syncrpcs)
+    noises_cfg = create_noises_cfg(affected_asyncrpc)
+    write_configs(delays_cfg, noises_cfg)
 
 
 if __name__ == "__main__":

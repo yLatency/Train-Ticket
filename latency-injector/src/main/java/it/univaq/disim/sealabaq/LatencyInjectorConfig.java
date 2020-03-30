@@ -24,13 +24,15 @@ public class LatencyInjectorConfig extends WebMvcConfigurerAdapter{
     @Autowired
     private Tracer tracer;
 
-    private InputStream stream = getClass().getClassLoader().getResourceAsStream("/config.json");
+    private InputStream delaysConfigStream = getClass().getClassLoader().getResourceAsStream("/delays.json");
+    private InputStream noisesConfigStream = getClass().getClassLoader().getResourceAsStream("/noises.json");
 
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         LatencyInjectorConfig.logger.info("Adding Interceptor" + LatencyInjectionInterceptor.class.getSimpleName());
-        registry.addInterceptor(new LatencyInjectionInterceptor(tracer, stream));
+        registry.addInterceptor(new LatencyInjectionInterceptor(tracer, delaysConfigStream));
+        registry.addInterceptor(new NoiseInjectionInterceptor(noisesConfigStream));
     }
 
 }
