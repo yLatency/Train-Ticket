@@ -219,7 +219,7 @@ public class TravelServiceImpl implements TravelService {
                 requestEntity,
                 Response.class);
 
-        ListenableFuture<ResponseEntity<Response>> futureTrainType = getAsyncTrainType(trip.getTrainTypeId(), headers);
+        TrainType trainType = getTrainType(trip.getTrainTypeId(), headers);
 
         //Ticket order _ high-speed train (number of tickets purchased)
         requestEntity = new HttpEntity(headers);
@@ -252,14 +252,6 @@ public class TravelServiceImpl implements TravelService {
         int distanceStart = route.getDistances().get(indexStart) - route.getDistances().get(0);
         int distanceEnd = route.getDistances().get(indexEnd) - route.getDistances().get(0);
 
-        TrainType trainType = null;
-        try {
-            trainType = JsonUtils.conveterObject(futureTrainType.get().getBody().getData(), TrainType.class);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
         //Train running time is calculated according to the average running speed of the train
         int minutesStart = 60 * distanceStart / trainType.getAverageSpeed();
         int minutesEnd = 60 * distanceEnd / trainType.getAverageSpeed();

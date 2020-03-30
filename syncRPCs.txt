@@ -10,3 +10,4 @@ POST,/api/v1/basicservice/basic/travel
 POST,/api/v1/orderservice/order/tickets
 POST,/api/v1/seatservice/seats/left_tickets
 POST,/api/v1/ticketinfoservice/ticketinfo
+GET,/api/v1/trainservice/trains

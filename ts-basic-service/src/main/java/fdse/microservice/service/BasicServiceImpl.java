@@ -12,12 +12,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author fdse
@@ -29,9 +26,6 @@ public class BasicServiceImpl implements BasicService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private AsyncRestTemplate asyncRestTemplate;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicServiceImpl.class);
 
     @Override
@@ -42,9 +36,6 @@ public class BasicServiceImpl implements BasicService {
         result.setStatus(true);
         response.setStatus(1);
         response.setMsg("Success");
-
-        ListenableFuture<ResponseEntity<Response>> futureTrainType = asyncQueryTrainType(info.getTrip().getTrainTypeId(), headers);
-
         boolean startingPlaceExist = checkStationExists(info.getStartingPlace(), headers);
         boolean endPlaceExist = checkStationExists(info.getEndPlace(), headers);
         if (!startingPlaceExist || !endPlaceExist) {
@@ -53,9 +44,23 @@ public class BasicServiceImpl implements BasicService {
             response.setMsg("Start place or end place not exist!");
         }
 
+        TrainType trainType = queryTrainType(info.getTrip().getTrainTypeId(), headers);
+        if (trainType == null) {
+            BasicServiceImpl.LOGGER.info("traintype doesn't exist");
+            result.setStatus(false);
+            response.setStatus(0);
+            response.setMsg("Train type doesn't exist");
+        } else {
+            result.setTrainType(trainType);
+        }
+
         String routeId = info.getTrip().getRouteId();
+        String trainTypeString = null;
+        if (trainType != null){
+            trainTypeString = trainType.getId();
+        }
         Route route = getRouteByRouteId(routeId, headers);
-        PriceConfig priceConfig = queryPriceConfigByRouteIdAndTrainType(routeId, info.getTrip().getTrainTypeId(), headers);
+        PriceConfig priceConfig = queryPriceConfigByRouteIdAndTrainType(routeId, trainTypeString, headers);
 
         String startingPlaceId = (String) queryForStationId(info.getStartingPlace(), headers).getData();
         String endPlaceId = (String) queryForStationId(info.getEndPlace(), headers).getData();
@@ -93,24 +98,6 @@ public class BasicServiceImpl implements BasicService {
         }
         result.setPrices(prices);
         result.setPercent(1.0);
-
-        TrainType trainType = null;
-        try {
-            trainType = JsonUtils.conveterObject(futureTrainType.get().getBody().getData(), TrainType.class);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        if (trainType == null) {
-            BasicServiceImpl.LOGGER.info("traintype doesn't exist");
-            result.setStatus(false);
-            response.setStatus(0);
-            response.setMsg("Train type doesn't exist");
-        } else {
-            result.setTrainType(trainType);
-        }
-
         response.setData(result);
         return response;
     }
@@ -152,18 +139,6 @@ public class BasicServiceImpl implements BasicService {
         Response  response = re.getBody();
 
         return JsonUtils.conveterObject(response.getData(), TrainType.class);
-    }
-
-    public ListenableFuture<ResponseEntity<Response>>  asyncQueryTrainType(String trainTypeId, HttpHeaders headers) {
-        BasicServiceImpl.LOGGER.info("[Basic Information Service][Query Train Type] Train Type: {}", trainTypeId);
-        HttpEntity requestEntity = new HttpEntity( headers);
-        ListenableFuture<ResponseEntity<Response>> re = asyncRestTemplate.exchange(
-                "http://ts-train-service:14567/api/v1/trainservice/trains/" + trainTypeId,
-                HttpMethod.GET,
-                requestEntity,
-                Response.class);
-
-        return re;
     }
 
     private Route getRouteByRouteId(String routeId, HttpHeaders headers) {
