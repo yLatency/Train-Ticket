@@ -10,12 +10,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 import seat.entity.*;
 
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author fdse
@@ -24,6 +27,10 @@ import java.util.Set;
 public class SeatServiceImpl implements SeatService {
     @Autowired
     RestTemplate restTemplate;
+
+    @Autowired
+    AsyncRestTemplate asyncRestTemplate;
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SeatServiceImpl.class);
 
@@ -178,6 +185,8 @@ public class SeatServiceImpl implements SeatService {
         ResponseEntity<Response<TrainType>> re2;
         ResponseEntity<Response<LeftTicketInfo>> re3;
 
+        ListenableFuture<ResponseEntity<Response<Config>>> asyncDirectProportion = getAsyncDirectProportion(headers);
+
         //Distinguish G\D from other trains
         String trainNumber = seatRequest.getTrainNumber();
         SeatServiceImpl.LOGGER.info("Seat request To String: {}", seatRequest.toString());
@@ -285,8 +294,8 @@ public class SeatServiceImpl implements SeatService {
             }
         }
         //Count the unsold tickets
+        double direstPart = getDirectProportionFromFuture(asyncDirectProportion);
 
-        double direstPart = getDirectProportion(headers);
         Route route = routeResult.getData();
         if (route.getStations().get(0).equals(seatRequest.getStartStation()) &&
                 route.getStations().get(route.getStations().size() - 1).equals(seatRequest.getDestStation())) {
@@ -315,4 +324,39 @@ public class SeatServiceImpl implements SeatService {
         SeatServiceImpl.LOGGER.info("Configs is : {}", configValue.getData().toString());
         return Double.parseDouble(configValue.getData().getValue());
     }
+
+    private ListenableFuture<ResponseEntity<Response<Config>>> getAsyncDirectProportion(HttpHeaders headers) {
+
+        String configName = "DirectTicketAllocationProportion";
+        HttpEntity requestEntity = new HttpEntity(headers);
+        ListenableFuture<ResponseEntity<Response<Config>>> re = asyncRestTemplate.exchange(
+                "http://ts-config-service:15679/api/v1/configservice/configs/" + configName,
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<Response<Config>>() {
+                });
+
+        return re;
+    }
+
+
+    private double getDirectProportionFromFuture(ListenableFuture<ResponseEntity<Response<Config>>> asyncDirectProportion){
+        Response<Config> configValue = null;
+        double direstPart = 0.0;
+
+        try {
+            configValue = asyncDirectProportion.get().getBody();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        if(configValue != null) {
+            SeatServiceImpl.LOGGER.info("Configs is : {}", configValue.getData().toString());
+        }
+
+        return direstPart;
+    }
+
+
 }

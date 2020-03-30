@@ -1,5 +1,4 @@
 GET,/api/v1/basicservice/basic
-GET,/api/v1/configservice/configs/DirectTicketAllocationProportion
 GET,/api/v1/priceservice/prices
 GET,/api/v1/routeservice/routes
 GET,/api/v1/stationservice/stations/id
