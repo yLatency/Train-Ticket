@@ -1,8 +1,1 @@
-[
-   {
-      "uri": "/api/v1/trainservice/trains",
-      "method": "GET",
-      "prob": 0.5,
-      "delay": 19
-   }
-]
+[]
