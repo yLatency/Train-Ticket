@@ -1,11 +1,13 @@
 package it.univaq.disim.sealabaq;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +28,7 @@ public class LatencyInjectionInterceptor extends HandlerInterceptorAdapter {
 
     private static final int randomBound = 10;
 
-    private static Map<String, List<Integer>> config;
+    private static List<List<Latency>> config;
 
 
     private Tracer tracer;
@@ -35,7 +37,7 @@ public class LatencyInjectionInterceptor extends HandlerInterceptorAdapter {
         this.tracer = tracer;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            config = mapper.readValue(stream, Map.class);
+            config = mapper.readValue(stream, new TypeReference<List<List<Latency>>>(){});
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -55,13 +57,16 @@ public class LatencyInjectionInterceptor extends HandlerInterceptorAdapter {
     private int getDelay(HttpServletRequest request, int experimentNumber) {
         String requestURL = request.getRequestURI();
         String requestMethod = request.getMethod();
-        for ( String key : config.keySet() ){
-            String[] methodAndURI = key.split(",");
-            String method = methodAndURI[0];
-            String uriRegexp = methodAndURI[1] + ".*";
-            if (requestURL.matches(uriRegexp) && requestMethod.equals(method) ){
-                return config.get(key).get(experimentNumber);
+        if( experimentNumber < config.size()) {
+            List<Latency> pattern = config.get(experimentNumber);
+            for (Latency latency : pattern){
+                String uriRegexp = latency.getUri() + ".*";
+                if (requestURL.matches(uriRegexp) && requestMethod.equals(latency.getMethod()) ){
+                    return latency.getDelay();
+                }
+
             }
+
         }
         return 0;
     }

@@ -1,30 +1,8 @@
 package it.univaq.disim.sealabaq;
 
-public class Noise{
+public class Noise extends Latency{
 
     private float prob;
-
-    private int delay;
-
-    private String uri;
-
-    private String method;
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
 
     public float getProb() {
         return prob;
@@ -34,11 +12,4 @@ public class Noise{
         this.prob = prob;
     }
 
-    public int getDelay() {
-        return delay;
-    }
-
-    public void setDelay(int delay) {
-        this.delay = delay;
-    }
 }

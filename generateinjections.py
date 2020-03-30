@@ -19,12 +19,13 @@ MAX_AFFECTED_RPCS_WCLASS = 3
 ## Request std during a 5min load test without injection
 ## load test params: (--c) 20 users (--r) 1 hatch rate (--run-time)  5 minutes 
 ## user waiting time: wait_time = between(1.0, 3.0) random waiting time between 1 seconds and 3 seconds
-REQ_STD = 5.59
+REQ_STD = 14.21
 
 
-def random_delay(affected_rpcs):
-    delay_ = random.uniform(2*REQ_STD, 4*REQ_STD)
-    return int(ceil(delay_/len(affected_rpcs)))
+def create_delays(rpcs):
+    delay_rpc_kind = random.uniform(2*REQ_STD, 4*REQ_STD) /len(rpcs)
+    num_calls =[int(rpc.split(',')[2]) for rpc in rpcs]
+    return [int(ceil(delay_rpc_kind/n)) for n in num_calls]
 
 
 def read_rpcs(RPCS_PATH):
@@ -50,31 +51,24 @@ def select_affected_asyncrpc(rpcs):
 
 
 
-def create_delays_cfg(rpcs, affected_rpcs):
-    cfg = {}
-    for rpc in rpcs:
-        cfg[rpc] = []
-    
-    for i, affected_rpcs_  in enumerate(affected_rpcs):
-        delay = random_delay(affected_rpcs_)
-        for rpc in rpcs:
-            if rpc in affected_rpcs_:
-                cfg[rpc].append(delay)
-            else:
-                cfg[rpc].append(0)
+def create_delays_cfg(affected_rpcs):
+    cfg = []
 
-    for i in range(len(affected_rpcs), NUM_REQ_CLASSES):
-        for rpc in rpcs:
-            cfg[rpc].append(0)
-
+    for rpcs  in affected_rpcs:
+        pattern = []
+        delays = create_delays(rpcs)
+        for rpc, delay in zip(rpcs, delays):
+            method, uri, _ = rpc.split(',')
+            pattern.append({"uri": uri, "method":method, "delay": delay})
+        cfg.append(pattern)
     return cfg
 
 
 def create_noises_cfg(affected_rpc):
     cfg = []
     delay = int(ceil(random.uniform(2*REQ_STD, 4*REQ_STD)))
-    httpmethod, uri =  affected_rpc.split(',')
-    cfg.append({'uri': uri, 'method': httpmethod, 'prob': NOISE_PROB, 'delay': delay})
+    method, uri, _ = affected_rpc.split(',')
+    cfg.append({'uri': uri, 'method': method, 'prob': NOISE_PROB, 'delay': delay})
     return cfg
 
 def write_configs(delays_cfg, noises_cfg):
@@ -90,7 +84,7 @@ def main():
     asyncrpcs = read_rpcs(ASYNC_RPCS_PATH)
     affected_syncrpcs = select_affected_syncrpcs(syncrpcs)
     affected_asyncrpc = select_affected_asyncrpc(asyncrpcs)
-    delays_cfg = create_delays_cfg(syncrpcs, affected_syncrpcs)
+    delays_cfg = create_delays_cfg(affected_syncrpcs)
     noises_cfg = create_noises_cfg(affected_asyncrpc)
     write_configs(delays_cfg, noises_cfg)
 

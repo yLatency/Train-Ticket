@@ -1,2 +1,2 @@
-GET,/api/v1/orderservice/order
-GET,/api/v1/configservice/configs/DirectTicketAllocationProportion
+GET,/api/v1/orderservice/order,1
+GET,/api/v1/configservice/configs/DirectTicketAllocationProportion,2
