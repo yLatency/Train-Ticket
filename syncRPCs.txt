@@ -10,3 +10,4 @@ POST,/api/v1/orderservice/order/tickets,1
 POST,/api/v1/seatservice/seats/left_tickets,2
 POST,/api/v1/ticketinfoservice/ticketinfo,1
 GET,/api/v1/trainservice/trains,4
+GET,/api/v1/configservice/configs/DirectTicketAllocationProportion,2
