@@ -19,7 +19,7 @@ MAX_AFFECTED_RPCS_WCLASS = 3
 ## Request std during a 5min load test without injection
 ## load test params: (--c) 20 users (--r) 1 hatch rate (--run-time)  5 minutes 
 ## user waiting time: wait_time = between(1.0, 3.0) random waiting time between 1 seconds and 3 seconds
-REQ_STD = 14.21
+REQ_STD = 15
 
 
 def create_delays(rpcs):
