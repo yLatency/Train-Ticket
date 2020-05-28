@@ -66,7 +66,7 @@ def create_delays_cfg(affected_rpcs):
 
 def create_noises_cfg(affected_rpc):
     cfg = []
-    delay = int(ceil(random.uniform(2*REQ_STD, 4*REQ_STD)))
+    delay = int(ceil(4*REQ_STD))
     method, uri, _ = affected_rpc.split(',')
     cfg.append({'uri': uri, 'method': method, 'prob': NOISE_PROB, 'delay': delay})
     return cfg
