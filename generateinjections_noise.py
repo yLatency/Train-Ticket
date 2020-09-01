@@ -11,19 +11,21 @@ NOISES_CONFIG_JSON = "latency-injector/src/main/resources/noises.json"
 SYNC_RPCS_PATH = "syncRPCs.txt"
 ASYNC_RPCS_PATH = "asyncRPCs.txt"
 
-NUM_AFFECTED_CLASSES = int(sys.argv[1])
+NOISE_INTESITY= float(sys.argv[1])
 NUM_REQ_CLASSES = 10
 NOISE_PROB = 0.5
 MAX_AFFECTED_RPCS_WCLASS = 3
 
-## Request std during a 5min load test without injection
+## Request avg during a 5min load test without injection
 ## load test params: (--c) 20 users (--r) 1 hatch rate (--run-time)  5 minutes 
 ## user waiting time: wait_time = between(1.0, 3.0) random waiting time between 1 seconds and 3 seconds
-REQ_STD = 15
+REQ_AVG = 116
 
 
-def create_delays(rpcs):
-    delay_rpc_kind = random.uniform(2*REQ_STD, 4*REQ_STD) /len(rpcs)
+def create_delays(rpcs, factor):
+    print('factor', factor)
+    delay_rpc_kind = (REQ_AVG*factor) /len(rpcs)
+    print('tot delay', (REQ_AVG*factor) )
     num_calls =[int(rpc.split(',')[2]) for rpc in rpcs]
     return [int(ceil(delay_rpc_kind/n)) for n in num_calls]
 
@@ -39,8 +41,8 @@ def random_rpcs(rpcs):
 
 
 def select_affected_syncrpcs(rpcs):
-    affected_rpcs = []
-    while len(affected_rpcs) < NUM_AFFECTED_CLASSES:
+    affected_rpcs = [random_rpcs(rpcs)]
+    while len(affected_rpcs) < 2:
         selected_rpcs = random_rpcs(rpcs)
         if selected_rpcs not in affected_rpcs:
             affected_rpcs.append(selected_rpcs)
@@ -53,20 +55,31 @@ def select_affected_asyncrpc(rpcs):
 
 def create_delays_cfg(affected_rpcs):
     cfg = []
+    rpcs1 =  affected_rpcs[0]
+    rpcs2 =  affected_rpcs[1]
 
-    for rpcs  in affected_rpcs:
-        pattern = []
-        delays = create_delays(rpcs)
-        for rpc, delay in zip(rpcs, delays):
-            method, uri, _ = rpc.split(',')
-            pattern.append({"uri": uri, "method":method, "delay": delay})
-        cfg.append(pattern)
+    delays1 = create_delays(rpcs1, 0.25)
+    delays2 = create_delays(rpcs2, 0.35)
+
+    pattern1 = []
+    pattern2 = []
+
+    for rpc, delay in zip(rpcs1, delays1):
+        method, uri, _ = rpc.split(',')
+        pattern1.append({"uri": uri, "method":method, "delay": delay})
+    cfg.append(pattern1)
+
+    for rpc, delay in zip(rpcs2, delays2):
+        method, uri, _ = rpc.split(',')
+        pattern2.append({"uri": uri, "method":method, "delay": delay})
+    cfg.append(pattern2)
+
     return cfg
 
 
 def create_noises_cfg(affected_rpc):
     cfg = []
-    delay = int(ceil(4*REQ_STD))
+    delay = int(ceil(REQ_AVG*NOISE_INTESITY))
     method, uri, _ = affected_rpc.split(',')
     cfg.append({'uri': uri, 'method': method, 'prob': NOISE_PROB, 'delay': delay})
     return cfg
